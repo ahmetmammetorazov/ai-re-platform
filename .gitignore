@@ -1,0 +1,24 @@
+# dependencies
+node_modules
+
+# next.js
+.next
+out
+
+# environment variables
+.env
+
+# logs
+npm-debug.log*
+
+# macOS
+.DS_Store
+
+# build files
+dist
+
+# vscode
+.vscode
+
+# coverage
+coverage
