@@ -1,40 +1,37 @@
 import axios from "axios";
 
 import { extractScripts } from "../utils/extractScripts.js";
-
-import { detectNextJS } from "../detectors/next.detector.js";
-import { detectReact } from "../detectors/react.detector.js";
-import { detectVue } from "../detectors/vue.detector.js";
-import { detectTailwind } from "../detectors/tailwind.detector.js";
+import { detectTechnology } from "../utils/detectTechnology.js";
+import { technologyRules } from "../rules/technology.rules.js";
+import { analyzeHeaders } from "../analyzers/header.analyzer.js";
+import { fetchBundles } from "../analyzers/bundle.analyzer.js";
+import { analyzeBundleEvidence } from "../analyzers/bundle.analyzer.js";
 
 export const analyzeWebsiteService = async (url) => {
   const response = await axios.get(url);
 
   const html = response.data;
-
+  const headers = response.headers;
+  const headerEvidence = analyzeHeaders(headers);
   const scripts = extractScripts(html);
+  const bundles = await fetchBundles(url, scripts);
+  const bundleEvidence = analyzeBundleEvidence(bundles);
 
   const technologies = [];
 
-  if (detectNextJS(html, scripts)) {
-    technologies.push("Next.js");
-  }
+  for (const rule of technologyRules) {
+    const result = detectTechnology(html, scripts, rule);
 
-  if (detectReact(html, scripts)) {
-    technologies.push("React");
-  }
-
-  if (detectVue(html, scripts)) {
-    technologies.push("Vue");
-  }
-
-  if (detectTailwind(html)) {
-    technologies.push("Tailwind CSS");
+    if (result) {
+      technologies.push(result);
+    }
   }
 
   return {
     url,
     technologies,
+    headerEvidence,
+    bundleEvidence,
     scripts,
   };
 };
