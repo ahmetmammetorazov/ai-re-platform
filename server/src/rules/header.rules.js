@@ -1,26 +1,39 @@
+import { TECHNOLOGIES } from "../constants/technologies.js";
+
 export const headerRules = [
   {
-    technology: "Next.js",
+    technology: TECHNOLOGIES.NEXT_JS,
     signatures: ["next.js"],
+    minimumMatches: 1,
   },
 
   {
-    technology: "Vercel",
-    signatures: ["x-vercel-id"],
+    technology: TECHNOLOGIES.VERCEL,
+    signatures: ["x-vercel-id", "x-vercel-cache"],
+    minimumMatches: 1,
   },
 
   {
-    technology: "Cloudflare",
-    signatures: ["cf-cache-status"],
+    technology: TECHNOLOGIES.CLOUDFLARE,
+    signatures: ["cf-cache-status", "cf-ray"],
+    minimumMatches: 1,
   },
 
   {
-    technology: "Nginx",
+    technology: TECHNOLOGIES.NGINX,
     signatures: ["nginx"],
+    minimumMatches: 1,
   },
 
   {
-    technology: "Apache",
+    technology: TECHNOLOGIES.APACHE,
     signatures: ["apache"],
+    minimumMatches: 1,
+  },
+
+  {
+    technology: TECHNOLOGIES.FASTLY,
+    signatures: ["fastly", "x-served-by"],
+    minimumMatches: 1,
   },
 ];

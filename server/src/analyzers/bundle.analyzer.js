@@ -26,7 +26,7 @@ export const fetchBundles = async (baseUrl, scripts) => {
   return findings;
 };
 
-export const analyzeBundleEvidence = (bundles) => {
+export const analyzeBundles = (bundles) => {
   const results = [];
 
   for (const rule of bundleRules) {
