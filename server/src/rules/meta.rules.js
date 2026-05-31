@@ -9,7 +9,7 @@ export const metaRules = [
 
   {
     technology: TECHNOLOGIES.WORDPRESS,
-    signatures: ["wordpress", "wp"],
+    signatures: ["wordpress"],
     minimumMatches: 1,
   },
 

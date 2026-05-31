@@ -9,9 +9,14 @@ import { fetchBundles } from "../analyzers/bundle.analyzer.js";
 import { analyzeBundles } from "../analyzers/bundle.analyzer.js";
 import { analyzeDom } from "../analyzers/dom.analyzer.js";
 import { aggregateEvidence } from "../analyzers/evidence-aggregator.analyzer.js";
+import { discoverRoutes } from "../analyzers/route.analyzer.js";
+import { discoverSitemapRoutes } from "../analyzers/sitemap/sitemap.analyzer.js";
+import { RouteRegistry } from "../analyzers/routes/route-registry.js";
+import { ROUTE_SOURCES } from "../constants/route-sources.js";
 
 export const analyzeWebsiteService = async (url) => {
   const response = await axios.get(url);
+  const routeRegistry = new RouteRegistry();
 
   const html = response.data;
   const headers = response.headers;
@@ -22,12 +27,30 @@ export const analyzeWebsiteService = async (url) => {
   const headerEvidence = analyzeHeaders(headers);
   const bundleEvidence = analyzeBundles(bundles);
   const domEvidence = analyzeDom(html);
-
-  return aggregateEvidence({
+  const technologies = aggregateEvidence({
     htmlEvidence,
     headerEvidence,
     bundleEvidence,
     metaEvidence,
     domEvidence,
   });
+
+  const routes = discoverRoutes(html, url);
+
+  for (const route of routes) {
+    routeRegistry.addRoute(route, ROUTE_SOURCES.ANCHOR);
+  }
+
+  const sitemapData = await discoverSitemapRoutes(url);
+
+  for (const route of sitemapData.routes) {
+    routeRegistry.addRoute(route, ROUTE_SOURCES.SITEMAP);
+  }
+
+  return {
+    url,
+    technologies,
+    routes: routeRegistry.getRoutes(),
+    scripts,
+  };
 };

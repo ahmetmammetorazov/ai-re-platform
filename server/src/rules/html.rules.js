@@ -27,7 +27,7 @@ export const htmlRules = [
 
   {
     technology: TECHNOLOGIES.SVELTE,
-    signatures: ["__SVELTE", "svelte"],
+    signatures: ["__SVELTE", "data-svelte"],
     minimumMatches: 1,
   },
 
