@@ -1,3 +1,5 @@
+import { SOURCE_WEIGHTS } from "../constants/source-weights.js";
+
 export const aggregateEvidence = ({
   htmlEvidence = [],
   headerEvidence = [],
@@ -15,6 +17,7 @@ export const aggregateEvidence = ({
         technologies.set(technology, {
           technology,
           confidence: "Low",
+          score: 0,
           evidence: {},
         });
       }
@@ -22,14 +25,6 @@ export const aggregateEvidence = ({
       const tech = technologies.get(technology);
 
       tech.evidence[source] = finding.evidence;
-      const sourceCount = Object.keys(tech.evidence).length;
-      if (sourceCount >= 3) {
-        tech.confidence = "High";
-      } else if (sourceCount >= 2) {
-        tech.confidence = "Medium";
-      } else {
-        tech.confidence = "Low";
-      }
     }
   };
 
@@ -42,6 +37,23 @@ export const aggregateEvidence = ({
   addEvidence("meta", metaEvidence);
 
   addEvidence("dom", domEvidence);
+
+  for (let tech of technologies.values()) {
+    const score = Object.keys(tech.evidence).reduce(
+      (total, source) => total + SOURCE_WEIGHTS[source],
+      0,
+    );
+
+    if (score >= 70) {
+      tech.confidence = "High";
+    } else if (score >= 40) {
+      tech.confidence = "Medium";
+    } else {
+      tech.confidence = "Low";
+    }
+
+    tech.score = score;
+  }
 
   return [...technologies.values()];
 };
