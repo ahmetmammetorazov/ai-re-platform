@@ -1,4 +1,5 @@
 import axios from "axios";
+import fs from "fs";
 
 import { extractScripts } from "../utils/extractScripts.js";
 import { htmlRules } from "../rules/html.rules.js";
@@ -13,6 +14,7 @@ import { discoverRoutes } from "../analyzers/route.analyzer.js";
 import { discoverSitemapRoutes } from "../analyzers/sitemap/sitemap.analyzer.js";
 import { RouteRegistry } from "../analyzers/routes/route-registry.js";
 import { ROUTE_SOURCES } from "../constants/route-sources.js";
+import { analyzeBundleRoutes } from "../analyzers/bundle-routes/bundle-route.analyzer.js";
 
 export const analyzeWebsiteService = async (url) => {
   const response = await axios.get(url);
@@ -47,10 +49,17 @@ export const analyzeWebsiteService = async (url) => {
     routeRegistry.addRoute(route, ROUTE_SOURCES.SITEMAP);
   }
 
+  const bundleRoutes = analyzeBundleRoutes(bundles);
+
+  for (const route of bundleRoutes) {
+    routeRegistry.addRoute(route.path, ROUTE_SOURCES.BUNDLE);
+  }
+
   return {
     url,
     technologies,
     routes: routeRegistry.getRoutes(),
+    bundleRoutes,
     scripts,
   };
 };

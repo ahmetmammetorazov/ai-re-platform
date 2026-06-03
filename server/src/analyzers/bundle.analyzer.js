@@ -2,28 +2,23 @@ import axios from "axios";
 import { bundleRules } from "../rules/bundle.rules.js";
 
 export const fetchBundles = async (baseUrl, scripts) => {
-  const findings = [];
-
-  const bundles = scripts.slice(0, 5);
-
-  for (const script of bundles) {
+  const bundlePromises = scripts.map(async (script) => {
     try {
       const bundleUrl = new URL(script, baseUrl).href;
-
       const response = await axios.get(bundleUrl);
 
-      const content = response.data;
-
-      findings.push({
+      return {
         url: bundleUrl,
-        content,
-      });
+        content: response.data,
+      };
     } catch (error) {
       console.error(`Failed to fetch bundle: ${script}`);
+      return null;
     }
-  }
+  });
 
-  return findings;
+  const findings = await Promise.all(bundlePromises);
+  return findings.filter(Boolean);
 };
 
 export const analyzeBundles = (bundles) => {
