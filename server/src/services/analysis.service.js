@@ -11,10 +11,11 @@ import { analyzeBundles } from "../analyzers/bundle.analyzer.js";
 import { analyzeDom } from "../analyzers/dom.analyzer.js";
 import { aggregateEvidence } from "../analyzers/evidence-aggregator.analyzer.js";
 import { discoverRoutes } from "../analyzers/route.analyzer.js";
-import { discoverSitemapRoutes } from "../analyzers/sitemap/sitemap.analyzer.js";
+import { discoverSitemapRoutes } from "../analyzers/sitemap/sitemap-analyzer.js";
 import { RouteRegistry } from "../analyzers/routes/route-registry.js";
 import { ROUTE_SOURCES } from "../constants/route-sources.js";
-import { analyzeBundleRoutes } from "../analyzers/bundle-routes/bundle-route.analyzer.js";
+import { analyzeBundleRoutes } from "../analyzers/bundle-routes/bundle-route-analyzer.js";
+import { analyzeApiEndpoints } from "../analyzers/api-endpoints/api-endpoint-analyzer.js";
 
 export const analyzeWebsiteService = async (url) => {
   const response = await axios.get(url);
@@ -28,6 +29,7 @@ export const analyzeWebsiteService = async (url) => {
   const htmlEvidence = analyzeHTML(html, scripts.join("\n"));
   const headerEvidence = analyzeHeaders(headers);
   const bundleEvidence = analyzeBundles(bundles);
+  const endpointEvidence = analyzeApiEndpoints(bundles);
   const domEvidence = analyzeDom(html);
   const technologies = aggregateEvidence({
     htmlEvidence,
@@ -60,6 +62,7 @@ export const analyzeWebsiteService = async (url) => {
     technologies,
     routes: routeRegistry.getRoutes(),
     bundleRoutes,
+    endpoints: endpointEvidence.endpoints,
     scripts,
   };
 };
