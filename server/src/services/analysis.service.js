@@ -16,6 +16,7 @@ import { RouteRegistry } from "../analyzers/routes/route-registry.js";
 import { ROUTE_SOURCES } from "../constants/route-sources.js";
 import { analyzeBundleRoutes } from "../analyzers/bundle-routes/bundle-route-analyzer.js";
 import { analyzeApiEndpoints } from "../analyzers/api-endpoints/api-endpoint-analyzer.js";
+import { analyzeSourceMaps } from "../analyzers/source-maps/source-map-analyzer.js";
 
 export const analyzeWebsiteService = async (url) => {
   const response = await axios.get(url);
@@ -31,6 +32,7 @@ export const analyzeWebsiteService = async (url) => {
   const bundleEvidence = analyzeBundles(bundles);
   const endpointEvidence = analyzeApiEndpoints(bundles);
   const domEvidence = analyzeDom(html);
+  const sourceMapResults = await analyzeSourceMaps(bundles);
   const technologies = aggregateEvidence({
     htmlEvidence,
     headerEvidence,
@@ -63,6 +65,7 @@ export const analyzeWebsiteService = async (url) => {
     routes: routeRegistry.getRoutes(),
     bundleRoutes,
     endpoints: endpointEvidence.endpoints,
+    sourceMaps: sourceMapResults.sourceMaps,
     scripts,
   };
 };
