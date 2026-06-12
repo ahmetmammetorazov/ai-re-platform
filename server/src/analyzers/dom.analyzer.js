@@ -1,26 +1,28 @@
+import { RuleAnalyzer } from "./base/RuleAnalyzer.js";
 import { domRules } from "../rules/dom.rules.js";
 
-export const analyzeDom = (html) => {
-  const results = [];
-
-  const normalizedHtml = html.toLowerCase();
-
-  for (const rule of domRules) {
-    const evidence = new Set();
-
-    for (const signature of rule.signatures) {
-      if (normalizedHtml.includes(signature.toLowerCase())) {
-        evidence.add(signature);
-      }
-    }
-
-    if (evidence.size >= rule.minimumMatches) {
-      results.push({
-        technology: rule.technology,
-        evidence: [...evidence],
-      });
-    }
+/**
+ * DOM Analyzer - Detects technologies from DOM structure
+ * Refactored to use RuleAnalyzer base class
+ */
+class DOMAnalyzer extends RuleAnalyzer {
+  constructor() {
+    super("DOM", domRules, {
+      caseSensitive: false,
+      useSet: true,
+    });
   }
 
-  return results;
+  async analyze(context) {
+    const { html = "" } = context;
+    return super.analyze({ content: html });
+  }
+}
+
+// Export both class and function for backward compatibility
+export const analyzeDom = (html) => {
+  const analyzer = new DOMAnalyzer();
+  return analyzer.analyze({ html });
 };
+
+export { DOMAnalyzer };

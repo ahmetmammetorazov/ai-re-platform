@@ -4,8 +4,12 @@ export const TECHNOLOGIES = {
   VUE: "Vue",
   ANGULAR: "Angular",
   SVELTE: "Svelte",
+  GATSBY: "Gatsby",
+  NUXT: "Nuxt",
 
   WORDPRESS: "WordPress",
+  GHOST: "Ghost",
+  SHOPIFY: "Shopify",
   TAILWIND: "Tailwind CSS",
   BOOTSTRAP: "Bootstrap",
 

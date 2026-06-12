@@ -1,28 +1,26 @@
+import { GenericExtractor } from "../base/GenericExtractor.js";
 import { extractApiEndpoints } from "./api-endpoint-parser.js";
-
 import { normalizeEndpoint, isValidEndpoint } from "./api-endpoint-filter.js";
 
+/**
+ * Discover API endpoints from bundles using GenericExtractor
+ * Refactored to reduce duplication
+ */
 export const discoverApiEndpoints = (bundles) => {
-  const endpoints = new Map();
+  const extractor = new GenericExtractor({
+    extractFn: (content) => extractApiEndpoints(content),
+    normalizeFn: (endpoint) => normalizeEndpoint(endpoint),
+    filterFn: (endpoint) => isValidEndpoint(endpoint),
+    getKeyFn: (endpoint) => endpoint,
+    sourceKey: "content",
+  });
 
-  for (const bundle of bundles) {
-    const extracted = extractApiEndpoints(bundle.content);
+  const endpoints = extractor.extract(bundles, {
+    transformFn: (endpoint) => ({
+      path: endpoint,
+      sources: ["bundle"],
+    }),
+  });
 
-    for (const endpoint of extracted) {
-      const normalized = normalizeEndpoint(endpoint);
-
-      if (!isValidEndpoint(normalized)) {
-        continue;
-      }
-
-      if (!endpoints.has(normalized)) {
-        endpoints.set(normalized, {
-          path: normalized,
-          sources: ["bundle"],
-        });
-      }
-    }
-  }
-
-  return [...endpoints.values()];
+  return endpoints;
 };

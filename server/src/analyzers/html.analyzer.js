@@ -1,27 +1,32 @@
+import { RuleAnalyzer } from "./base/RuleAnalyzer.js";
 import { htmlRules } from "../rules/html.rules.js";
 
-export const analyzeHTML = (html, scripts) => {
-  const results = [];
-
-  for (const rule of htmlRules) {
-    const evidence = [];
-
-    for (const pattern of rule.signatures) {
-      const foundInHtml = html.includes(pattern);
-      const foundInScripts = scripts.includes(pattern);
-
-      if (foundInHtml || foundInScripts) {
-        evidence.push(pattern);
-      }
-    }
-
-    if (evidence.length >= rule.minimumMatches) {
-      results.push({
-        technology: rule.technology,
-        evidence,
-      });
-    }
+/**
+ * HTML Analyzer - Detects technologies from HTML content
+ * Refactored to use RuleAnalyzer base class
+ */
+class HTMLAnalyzer extends RuleAnalyzer {
+  constructor() {
+    super("HTML", htmlRules, {
+      caseSensitive: false,
+      useSet: true,
+    });
   }
 
-  return results;
+  async analyze(context) {
+    // Combine HTML and scripts content for searching
+    const { html = "", scripts = [] } = context;
+    const scriptContent = Array.isArray(scripts) ? scripts.join("\n") : scripts;
+    const combinedContent = `${html}\n${scriptContent}`;
+
+    return super.analyze({ content: combinedContent });
+  }
+}
+
+// Export both class and function for backward compatibility
+export const analyzeHTML = (html, scripts) => {
+  const analyzer = new HTMLAnalyzer();
+  return analyzer.analyze({ html, scripts });
 };
+
+export { HTMLAnalyzer };

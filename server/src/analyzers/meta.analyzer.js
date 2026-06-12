@@ -1,36 +1,40 @@
+import { RuleAnalyzer } from "./base/RuleAnalyzer.js";
 import { metaRules } from "../rules/meta.rules.js";
 
-export const analyzeMetaTags = (html) => {
-  const results = [];
-
-  const metaTags = [
-    ...html.matchAll(
-      /<meta[^>]*name=["']([^"']+)["'][^>]*content=["']([^"']+)["'][^>]*>/gi,
-    ),
-  ];
-
-  for (const rule of metaRules) {
-    const evidence = new Set();
-
-    for (const match of metaTags) {
-      const [, name, content] = match;
-
-      const searchableText = `${name} ${content}`.toLowerCase();
-
-      for (const signature of rule.signatures) {
-        if (searchableText.includes(signature.toLowerCase())) {
-          evidence.add(signature);
-        }
-      }
-    }
-
-    if (evidence.size > 0) {
-      results.push({
-        technology: rule.technology,
-        evidence: [...evidence],
-      });
-    }
+/**
+ * Meta Tags Analyzer - Detects technologies from meta tags
+ * Refactored to use RuleAnalyzer base class
+ */
+class MetaAnalyzer extends RuleAnalyzer {
+  constructor() {
+    super("Meta", metaRules, {
+      caseSensitive: false,
+      useSet: true,
+    });
   }
 
-  return results;
+  async analyze(context) {
+    const { html = "" } = context;
+
+    // Extract meta tags and combine into searchable content
+    const metaTags = [
+      ...html.matchAll(
+        /<meta[^>]*name=["']([^"']+)["'][^>]*content=["']([^"']+)["'][^>]*>/gi,
+      ),
+    ];
+
+    const metaContent = metaTags
+      .map(([, name, content]) => `${name} ${content}`)
+      .join(" ");
+
+    return super.analyze({ content: metaContent });
+  }
+}
+
+// Export both class and function for backward compatibility
+export const analyzeMetaTags = (html) => {
+  const analyzer = new MetaAnalyzer();
+  return analyzer.analyze({ html });
 };
+
+export { MetaAnalyzer };

@@ -1,29 +1,25 @@
+import { GenericExtractor } from "../base/GenericExtractor.js";
 import { extractRouteCandidates } from "./bundle-route-parser.js";
 import { isValidRoute, normalizeRoute } from "./bundle-route-filter.js";
 
+/**
+ * Discover routes from bundles using GenericExtractor
+ * Refactored to reduce duplication
+ */
 export const discoverBundleRoutes = (bundles) => {
-  const routes = new Map();
+  const extractor = new GenericExtractor({
+    extractFn: (content) => extractRouteCandidates(content),
+    normalizeFn: (item) => ({
+      ...item,
+      path: normalizeRoute(item.path),
+    }),
+    filterFn: (item) => isValidRoute(item.path),
+    getKeyFn: (item) => item.path,
+    sourceKey: "content",
+  });
 
-  for (const bundle of bundles) {
-    const findings = extractRouteCandidates(bundle.content);
-
-    for (const finding of findings) {
-      const normalizedRoute = normalizeRoute(finding.path);
-
-      if (!isValidRoute(normalizedRoute)) {
-        continue;
-      }
-
-      const existing = routes.get(normalizedRoute);
-
-      if (!existing || finding.confidence > existing.confidence) {
-        routes.set(normalizedRoute, {
-          ...finding,
-          path: normalizedRoute,
-        });
-      }
-    }
-  }
-
-  return [...routes.values()];
+  // Use priority-based extraction to keep highest confidence routes
+  return extractor.extractWithPriority(bundles, (newItem, existingItem) => {
+    return newItem.confidence > (existingItem.confidence || 0);
+  });
 };
